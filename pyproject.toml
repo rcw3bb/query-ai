@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "query-ai"
+version = "0.1.0"
+description = "A query application with AI"
+authors = ["Ron Webb <ron@ronella.xyz>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+transformers = "^4.48.2"
+torch = "^2.6.0"
+pgvector = "^0.3.6"
+psycopg2 = "^2.9.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
