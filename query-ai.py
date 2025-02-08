@@ -25,7 +25,7 @@ final_results = {}
 for question in questions:
     results = model_manager.answer_question(db_manager, question)
     for result in results:
-        if result['score'] < 0.4:  # Threshold for unanswerable questions
+        if result['score'] < 0.3:  # Threshold for unanswerable questions
             print(f"Question: {result['question']}")
             print(f"[Answer: This question is unanswerable based on the given context. ({result['answer']})]")
             print(f"Context: {result['context']}")

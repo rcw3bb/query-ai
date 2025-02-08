@@ -51,27 +51,29 @@ class ModelMgr:
 
         return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
 
-    def get_embeddings(self, text: str, chunk_size=embedding_token_length):
+    def get_embeddings(self, text: str, chunk_size=embedding_token_length, overlap=50):
         """
-        Splits the text into chunks and gets the embedding for each chunk.
+        Splits the text into overlapping chunks and gets the embedding for each chunk.
 
         Args:
         text (str): The text to embed.
         chunk_size (int, optional): The size of each chunk. Defaults to embedding_token_length.
+        overlap (int, optional): The number of words to overlap between chunks. Defaults to 0.
 
         Returns:
         list: A list of tuples containing the chunk index, start index, end index, chunk text, and its embedding.
         """
 
         words = text.split()
-        num_chunks = (len(words) + chunk_size - 1) // chunk_size
         output = []
-        for i in range(num_chunks):
-            start = i * chunk_size
-            end = min((i + 1) * chunk_size, len(words))
+        i = 0
+        while i * (chunk_size - overlap) < len(words):
+            start = i * (chunk_size - overlap)
+            end = min(start + chunk_size, len(words))
             chunk = " ".join(words[start:end])
             embedding = self.get_embedding(chunk)
             output.append((i, start, end, chunk, embedding))
+            i += 1
 
         return output
 
