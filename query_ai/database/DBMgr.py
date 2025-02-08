@@ -1,6 +1,6 @@
 import psycopg2
 from pgvector.psycopg2 import register_vector
-from xyz.ronella.ml.query.ai.commons import embedding_token_length
+from query_ai.commons import embedding_token_length
 
 class DBMgr:
     """

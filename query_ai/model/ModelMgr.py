@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModel, AutoModelForQuestionAnswering, pipeline
-from xyz.ronella.ml.query.ai.database import DBMgr
-from xyz.ronella.ml.query.ai.commons import embedding_token_length
+from query_ai.database import DBMgr
+from query_ai.commons import embedding_token_length
 
 class ModelMgr:
     """

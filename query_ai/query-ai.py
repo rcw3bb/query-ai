@@ -1,6 +1,6 @@
-from xyz.ronella.ml.query.ai.database import db_manager
-from xyz.ronella.ml.query.ai.model import model_manager
-from xyz.ronella.ml.query.ai.util import create_sample_context
+from query_ai.database import db_manager
+from query_ai.model import model_manager
+from query_ai.util import create_sample_context
 
 import nltk
 

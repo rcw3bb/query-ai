@@ -1,11 +1,9 @@
 import re
-import string
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
-from xyz.ronella.ml.query.ai.database import is_existing_context, DBMgr
-from xyz.ronella.ml.query.ai.model import model_manager
+from query_ai.database import is_existing_context, DBMgr
+from query_ai.model import model_manager
 
 stop_words = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
