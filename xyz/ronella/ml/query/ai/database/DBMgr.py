@@ -1,5 +1,6 @@
 import psycopg2
 from pgvector.psycopg2 import register_vector
+from xyz.ronella.ml.query.ai.commons import embedding_token_length
 
 class DBMgr:
     """
@@ -80,12 +81,24 @@ class DBMgr:
         """
         Initializes the database by creating necessary extensions and tables.
         """
+
         # Create the vector extension
         self.execute("CREATE EXTENSION IF NOT EXISTS vector",
                      output_logic=lambda ___connection, ___cursor: register_vector(___connection))
 
-        self.execute("CREATE TABLE IF NOT EXISTS qa_embeddings (id SERIAL PRIMARY KEY, context TEXT, embedding vector(384))")
+        # Create a table to store embeddings and context
+        self.execute("""
+            CREATE TABLE IF NOT EXISTS qa_embeddings (id SERIAL PRIMARY KEY,
+                chunk_id INTEGER NOT NULL,
+                start_word INTEGER NOT NULL,
+                end_word INTEGER NOT NULL,
+                context TEXT, 
+                embedding vector(%s)
+            )
+            """, stmt_vars=(embedding_token_length,))
 
+        # Create index for embedding column
+        self.execute("CREATE INDEX IF NOT EXISTS embedding_idx ON qa_embeddings USING ivfflat(embedding)")
 
 def is_existing_context(db_manager : DBMgr, context: str):
     """

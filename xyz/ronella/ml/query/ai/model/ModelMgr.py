@@ -1,6 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModel, AutoModelForQuestionAnswering, pipeline
 from xyz.ronella.ml.query.ai.database import DBMgr
+from xyz.ronella.ml.query.ai.commons import embedding_token_length
 
 class ModelMgr:
     """
@@ -43,12 +44,36 @@ class ModelMgr:
         Returns:
         numpy.ndarray: The embedding of the text.
         """
-        max_length = 256
-        inputs = self.embedding_tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=max_length)
+
+        inputs = self.embedding_tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=embedding_token_length)
         with torch.no_grad():
             outputs = self.embedding_model(**inputs)
 
         return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+
+    def get_embeddings(self, text: str, chunk_size=embedding_token_length):
+        """
+        Splits the text into chunks and gets the embedding for each chunk.
+
+        Args:
+        text (str): The text to embed.
+        chunk_size (int, optional): The size of each chunk. Defaults to embedding_token_length.
+
+        Returns:
+        list: A list of tuples containing the chunk index, start index, end index, chunk text, and its embedding.
+        """
+
+        words = text.split()
+        num_chunks = (len(words) + chunk_size - 1) // chunk_size
+        output = []
+        for i in range(num_chunks):
+            start = i * chunk_size
+            end = min((i + 1) * chunk_size, len(words))
+            chunk = " ".join(words[start:end])
+            embedding = self.get_embedding(chunk)
+            output.append((i, start, end, chunk, embedding))
+
+        return output
 
     def answer_question(self, db_manager: DBMgr, question: str):
         """

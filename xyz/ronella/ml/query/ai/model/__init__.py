@@ -1,7 +1,5 @@
 from .ModelMgr import ModelMgr
-
-embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
-qa_model_name = "bert-large-uncased-whole-word-masking-finetuned-squad"
+from xyz.ronella.ml.query.ai.commons import embedding_model_name, qa_model_name
 
 model_manager = ModelMgr(embedding_model_name, qa_model_name)
 
