@@ -1,7 +1,10 @@
 import torch
-from transformers import AutoTokenizer, AutoModel, AutoModelForQuestionAnswering, pipeline
+
+from transformers import (AutoTokenizer, AutoModel, AutoModelForQuestionAnswering, pipeline,
+                          AutoModelForSeq2SeqLM)
+
 from query_ai.database import DBMgr
-from query_ai.commons import embedding_token_length
+from query_ai.commons import embedding_token_length, generator_model_name
 
 class ModelMgr:
     """
@@ -31,8 +34,15 @@ class ModelMgr:
 
         self.qa_tokenizer = AutoTokenizer.from_pretrained(qa_model_name)
         self.qa_model = AutoModelForQuestionAnswering.from_pretrained(qa_model_name)
+        self.qa_pipeline = pipeline("question-answering",
+                                    model=self.qa_model,
+                                    tokenizer=self.qa_tokenizer)
 
-        self.qa_pipeline = pipeline("question-answering", model=self.qa_model, tokenizer=self.qa_tokenizer)
+        self.generator_tokenizer = AutoTokenizer.from_pretrained(generator_model_name)
+        self.generator_model = AutoModelForSeq2SeqLM.from_pretrained(generator_model_name)
+        self.generator_pipeline = pipeline("text2text-generation",
+                                           model=self.generator_model,
+                                           tokenizer=self.generator_tokenizer)
 
     def get_embedding(self, text: str):
         """
@@ -100,6 +110,72 @@ class ModelMgr:
 
         for context in relevant_contexts:
             result = self.qa_pipeline(question=question, context=context[0])
+            result["question"] = question
+            result["context"] = context[0]
+            results.append(result)
+
+        return results
+
+    @staticmethod
+    def __format_conversation(conversation):
+        """
+        Formats a conversation into a string suitable for prompting the model.
+
+        Args:
+        conversation (list): A list of dictionaries representing the conversation. Each dictionary should have 'role' and 'content' keys.
+
+        Returns:
+        str: The formatted conversation as a string.
+        """
+
+        formatted_conversation = ""
+        for message in conversation:
+            formatted_conversation += f"{message['role']}: {message['content']}\n"
+        formatted_conversation += "assistant:"  # Important for prompting the model
+        return formatted_conversation
+
+    def generate_answer(self, db_manager: DBMgr, question: str):
+        """
+        Answer a question using the generator model and database manager.
+
+        Args:
+        db_manager (DBMgr): The database manager to retrieve relevant contexts.
+        question (str): The question to answer.
+
+        Returns:
+        list: A list of dictionaries containing the answers and their contexts.
+        """
+
+        question_embedding = self.get_embedding(question)
+
+        results = []
+
+        relevant_contexts = db_manager.execute(
+            stmt="SELECT context, embedding <=> %s AS distance FROM qa_embeddings ORDER BY distance LIMIT 1",
+            stmt_vars=(question_embedding,),
+            output_logic=lambda ___connection, ___cursor: ___cursor.fetchall()
+        )
+
+        for context in relevant_contexts:
+
+            message = f"""You are a chatbot that can answer questions based on the given context.
+Context: 
+
+{context[0]}
+
+Your answer must be paraphrased from the context.
+"""
+            chat = [
+                {'role': 'system', 'content' : message},
+                {'role': 'user', 'content' : question}
+            ]
+
+            formatted_chat = ModelMgr.__format_conversation(chat)
+
+            result = self.generator_pipeline(formatted_chat,
+                                             max_length=len(formatted_chat) + 50,
+                                             )[0]
+
             result["question"] = question
             result["context"] = context[0]
             results.append(result)

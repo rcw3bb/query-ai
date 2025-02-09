@@ -17,32 +17,15 @@ questions = [
     "Who wrote 'To be or not to be'?",
     "What is a subset of artificial intelligence?",
     "What is deep learning?",
-    "What is artificial intelligence?",
-    "What is the potential of artificial intelligence?",
+    "What are some concerns with artificial intelligence?",
+    "How to address the challenges in artificial intelligence?",
 ]
 
 final_results = {}
 for question in questions:
-    results = model_manager.answer_question(db_manager, question)
+    results = model_manager.generate_answer(db_manager, question)
     for result in results:
-        if result['score'] < 0.3:  # Threshold for unanswerable questions
-            print(f"Question: {result['question']}")
-            print(f"[Answer: This question is unanswerable based on the given context. ({result['answer']})]")
-            print(f"Context: {result['context']}")
-            print(f"Score: {result['score']:.4f}")
-        else:
-            if result['question'] not in final_results:
-                final_results[result['question']] = result['answer']
-
-            print(f"Question: {result['question']}")
-            print(f"Answer: {result['answer']}")
-            print(f"Context: {result['context']}")
-            print(f"Score: {result['score']:.4f}")
-
+        print(f"Context: {result['context']}")
+        print(f"Question: {result['question']}")
+        print(f"Generated Text: {result['generated_text']}")
         print("-" * 50)
-
-print("\n\n----[Final Answers]-------------------------------")
-for key, value in final_results.items():
-    print(f"Question: {key}")
-    print(f"Answer: {value}")
-    print("-" * 50)
