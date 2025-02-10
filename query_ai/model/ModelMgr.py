@@ -63,7 +63,7 @@ class ModelMgr:
         Args:
         text (str): The text to embed.
         chunk_size (int, optional): The size of each chunk. Defaults to embedding_token_length.
-        overlap (int, optional): The number of words to overlap between chunks. Defaults to 0.
+        overlap (int, optional): The number of words to overlap between chunks. Defaults to 50.
 
         Returns:
         list: A list of tuples containing the chunk index, start index, end index, chunk text, and its embedding.

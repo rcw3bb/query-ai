@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "query-ai"
-version = "0.1.0"
+name = "query_ai"
+version = "1.0.0"
 description = "A query application with AI"
 authors = ["Ron Webb <ron@ronella.xyz>"]
 readme = "README.md"
