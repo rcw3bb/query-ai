@@ -1,59 +1,6 @@
-import re
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-
 from query_ai.database import is_existing_context, DBMgr
 from query_ai.model import model_manager
-
-stop_words = set(stopwords.words('english'))
-lemmatizer = WordNetLemmatizer()
-
-def remove_emojis(text):
-    emoji_pattern = re.compile("["
-                               u"\U0001F600-\U0001F64F"  # emoticons
-                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                               "]", flags=re.UNICODE)
-    return emoji_pattern.sub(r'', text) # no emoji
-
-def clean_text(text):
-    # text = text.lower()  # Lowercasing
-    # text = text.translate(str.maketrans('', '', string.punctuation))  # Remove punctuation
-    # text = re.sub(r'\d+', '', text)  # Remove numbers
-    text = re.sub(r'<.*?>', '', text) # Remove HTML tags
-    text = remove_emojis(text) # Remove emojis
-    # words = word_tokenize(text)
-    # words = [word for word in words if word not in stop_words] # Remove Stop words
-    # words = [lemmatizer.lemmatize(word) for word in words] # Lemmatization
-    # cleaned_text = " ".join(words)
-    return text
-
-def split_by_paragraph(text):
-    """Splits a large text into paragraphs.
-
-    Handles various newline characters and empty paragraphs.
-
-    Args:
-        text: The input text (string).
-
-    Returns:
-        A list of strings, where each string is a paragraph.
-        Returns an empty list if the input text is empty or None.
-    """
-
-    if not text:  # Handle empty or None input
-        return []
-
-    # Normalize newline characters (Windows, Linux, Mac)
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-
-    paragraphs = text.split("\n")
-
-    # Remove empty paragraphs (those consisting only of whitespace)
-    paragraphs = [p.strip() for p in paragraphs if p.strip()] #Removes empty paragraphs
-
-    return paragraphs
+from query_ai.util.TextUtil import TextUtil
 
 def create_sample_context(db_manager: DBMgr):
     """
@@ -95,11 +42,12 @@ In conclusion, artificial intelligence is a powerful and transformative technolo
     # Insert sample data and embeddings
     for text in sample_texts:
 
-        paragraphs = split_by_paragraph(text)
+        paragraphs = TextUtil.split_by_paragraph(text)
 
         for paragraph in paragraphs:
 
-            cleaned_text = clean_text(paragraph)
+            text_util = TextUtil()
+            cleaned_text = text_util.clean_text(paragraph)
 
             embeddings = model_manager.get_embeddings(cleaned_text)
 

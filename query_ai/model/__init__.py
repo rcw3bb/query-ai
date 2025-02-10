@@ -1,6 +1,5 @@
 from .ModelMgr import ModelMgr
-from query_ai.commons import embedding_model_name, qa_model_name
 
-model_manager = ModelMgr(embedding_model_name, qa_model_name)
+model_manager = ModelMgr()
 
 __all__ = ["model_manager"]
