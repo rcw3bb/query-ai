@@ -100,7 +100,7 @@ class ModelMgr:
         formatted_conversation += "assistant:"  # Important for prompting the model
         return formatted_conversation
 
-    def generate_answer(self, db_manager: DBMgr, question: str):
+    def generate_answer(self, question: str, db_manager: DBMgr = None, provided_context: str = None):
         """
         Answer a question using the generator model and database manager.
 
@@ -115,12 +115,17 @@ class ModelMgr:
         question_embedding = self.get_embedding(question)
 
         results = []
+        relevant_contexts = []
 
-        relevant_contexts = db_manager.execute(
-            stmt="SELECT context, embedding <=> %s AS distance FROM qa_embeddings ORDER BY distance LIMIT 1",
-            stmt_vars=(question_embedding,),
-            output_logic=lambda ___connection, ___cursor: ___cursor.fetchall()
-        )
+        if provided_context:
+            distance = 0
+            relevant_contexts = [(provided_context, distance)]
+        elif db_manager:
+            relevant_contexts = db_manager.execute(
+                stmt="SELECT context, embedding <=> %s AS distance FROM qa_embeddings ORDER BY distance LIMIT 1",
+                stmt_vars=(question_embedding,),
+                output_logic=lambda ___connection, ___cursor: ___cursor.fetchall()
+            )
 
         for context in relevant_contexts:
 
@@ -128,12 +133,12 @@ class ModelMgr:
 Context: 
 
 {context[0]}
-
-Your answer must be paraphrased from the context.
 """
             chat = [
                 {'role': 'system', 'content' : message},
-                {'role': 'user', 'content' : question}
+                {'role': 'assistant', 'content' : "Must answer politely and informatively."},
+                {'role': 'assistant', 'content' : "Respond 'I don't know' if out of context."},
+                {'role': 'user', 'content' : question},
             ]
 
             formatted_chat = ModelMgr.format_conversation(chat)

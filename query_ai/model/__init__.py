@@ -1,4 +1,4 @@
-from .ModelMgr import ModelMgr
+from .model_manager import ModelMgr
 
 model_manager = ModelMgr()
 

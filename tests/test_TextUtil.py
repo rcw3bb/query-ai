@@ -1,5 +1,5 @@
 import unittest
-from query_ai.util.TextUtil import TextUtil
+from query_ai.util.text_util import TextUtil
 
 class TestTextUtil(unittest.TestCase):
 

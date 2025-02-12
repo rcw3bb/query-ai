@@ -3,7 +3,7 @@ import psycopg2
 
 from unittest.mock import patch, MagicMock
 from query_ai.commons import embedding_token_length
-from query_ai.database.DBMgr import DBMgr, is_existing_context
+from query_ai.database.db_manager import DBMgr, is_existing_context
 
 class TestDBMgr(unittest.TestCase):
 

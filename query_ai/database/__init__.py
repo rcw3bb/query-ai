@@ -1,4 +1,4 @@
-from .DBMgr import DBMgr, is_existing_context
+from .db_manager import DBMgr, is_existing_context
 
 # Initialize the DBManager instance
 db_manager = DBMgr(

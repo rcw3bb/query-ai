@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from query_ai.model.ModelMgr import ModelMgr
+from query_ai.model.model_manager import ModelMgr
 from query_ai.database import DBMgr
 
 class TestModelMgr(unittest.TestCase):
