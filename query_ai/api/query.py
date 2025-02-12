@@ -34,8 +34,13 @@ class Query:
         """
         data = request.get_json()
         question = data.get('question')
+        context = data.get('context')
 
-        response = model_manager.generate_answer(question, db_manager)
+        if context:
+            response = model_manager.generate_answer(question, provided_context=context)
+        else:
+            response = model_manager.generate_answer(question, db_manager)
+
         text = response[0]['generated_text']
 
         return jsonify({'answer': text}), 200
