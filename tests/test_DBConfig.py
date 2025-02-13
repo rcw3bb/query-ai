@@ -33,7 +33,7 @@ class TestDBConfig(unittest.TestCase):
         mock_properties.return_value = mock_properties_instance
         mock_properties_instance.get.side_effect = lambda section, key, default: "custom_db"
         mock_properties_instance.getint.side_effect = lambda section, key, default: 1234
-        mock_getenv.side_effect = lambda key, default: "custom_user" if key == "DB_USER" \
+        mock_getenv.side_effect = lambda key, default: "custom_user" if key == "DB_USERNAME" \
             else "custom_password" if key == "DB_PASSWORD" else default
 
         module_dir = os.path.dirname(os.path.abspath(__file__))

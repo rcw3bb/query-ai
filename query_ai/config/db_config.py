@@ -20,7 +20,7 @@ class DBConfig:
         self.__database = properties.get("DATABASE", "DATABASE_NAME", "query-ai")
         self.__host = properties.get("DATABASE", "HOST", "localhost")
         self.__port = properties.getint("DATABASE", "PORT", 5432)
-        self.__user = os.getenv("DB_USER", "postgres")
+        self.__user = os.getenv("DB_USERNAME", "postgres")
         self.__password = os.getenv("DB_PASSWORD", "mypassword")
 
     def get_database(self):
