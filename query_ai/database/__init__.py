@@ -1,15 +1,20 @@
+import os
 from .db_manager import DBMgr, is_existing_context
+from ..config.db_config import DBConfig
 
-# Initialize the DBManager instance
+module_dir = os.path.dirname(os.path.abspath(__file__))
+filename = os.path.join(module_dir, "..", "..", "conf", "application.properties")
+
+db_config = DBConfig(filename)
+
 db_manager = DBMgr(
-    dbname="query-ai",
-    user="postgres",
-    password="mypassword",
-    host="localhost",
-    port="5432"
+    dbname=db_config.get_database(),
+    user=db_config.get_user(),
+    password=db_config.get_password(),
+    host=db_config.get_host(),
+    port=db_config.get_port()
 )
 
 db_manager.initialize()
 
-# Export the db_manager and connection
 __all__ = ['db_manager', 'is_existing_context']
