@@ -1,7 +1,5 @@
 import os
 
-from query_ai.util.properties import Properties
-
 class DBConfig:
     """
     Configuration class for database settings.
@@ -10,18 +8,17 @@ class DBConfig:
     Since: 1.0.0
     """
 
-    def __init__(self, properties_file: str):
+    def __init__(self):
         """
         Initialize the DBConfig object by loading properties from the properties file
         and environment variables.
         """
 
-        properties = Properties(properties_file)
-        self.__database = properties.get("DATABASE", "DATABASE_NAME", "query-ai")
-        self.__host = properties.get("DATABASE", "HOST", "localhost")
-        self.__port = properties.getint("DATABASE", "PORT", 5432)
-        self.__user = os.getenv("DB_USERNAME", "postgres")
-        self.__password = os.getenv("DB_PASSWORD", "mypassword")
+        self.__database = os.getenv("QA_DB_NAME", "query-ai")
+        self.__host = os.getenv("QA_DB_HOST", "localhost")
+        self.__port = os.getenv("QA_DB_PORT", 5432)
+        self.__user = os.getenv("QA_DB_USERNAME", "postgres")
+        self.__password = os.getenv("QA_DB_PASSWORD", "mypassword")
 
     def get_database(self):
         """

@@ -1,11 +1,7 @@
-import os
 from .db_manager import DBMgr, is_existing_context
 from ..config.db_config import DBConfig
 
-module_dir = os.path.dirname(os.path.abspath(__file__))
-filename = os.path.join(module_dir, "..", "..", "conf", "application.properties")
-
-db_config = DBConfig(filename)
+db_config = DBConfig()
 
 db_manager = DBMgr(
     dbname=db_config.get_database(),
@@ -17,4 +13,4 @@ db_manager = DBMgr(
 
 db_manager.initialize()
 
-__all__ = ['db_manager', 'is_existing_context']
+__all__ = ['db_manager', 'is_existing_context', 'DBMgr']

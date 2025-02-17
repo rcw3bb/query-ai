@@ -2,7 +2,8 @@ import unittest
 import psycopg2
 
 from unittest.mock import patch, MagicMock
-from query_ai.commons import embedding_token_length
+
+from query_ai.config import embedding_config
 from query_ai.database.db_manager import DBMgr, is_existing_context
 
 class TestDBMgr(unittest.TestCase):
@@ -64,7 +65,7 @@ class TestDBMgr(unittest.TestCase):
                 context TEXT,
                 embedding vector(%s)
             )
-            """, (embedding_token_length,))
+            """, (embedding_config.token_length,))
         cursor.execute.assert_any_call("CREATE INDEX IF NOT EXISTS embedding_idx ON qa_embeddings USING ivfflat(embedding)", None)
 
     @patch('psycopg2.connect')

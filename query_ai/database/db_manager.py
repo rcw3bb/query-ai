@@ -1,17 +1,12 @@
 import psycopg2
 from pgvector.psycopg2 import register_vector
-from query_ai.commons import embedding_token_length
+
+from query_ai.config import embedding_config
+
 
 class DBMgr:
     """
     A class to manage database connections and operations for a PostgreSQL database.
-
-    Attributes:
-        dbname (str): The name of the database.
-        user (str): The username used to authenticate.
-        password (str): The password used to authenticate.
-        host (str): The host address of the database.
-        port (int): The port number to connect to.
 
     Author: Ron Webb
     Since: 1.0.0
@@ -95,7 +90,7 @@ class DBMgr:
                 context TEXT, 
                 embedding vector(%s)
             )
-            """, stmt_vars=(embedding_token_length,))
+            """, stmt_vars=(embedding_config.token_length,))
 
         # Create index for embedding column
         self.execute("CREATE INDEX IF NOT EXISTS embedding_idx ON qa_embeddings USING ivfflat(embedding)")

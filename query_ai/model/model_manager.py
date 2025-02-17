@@ -3,20 +3,13 @@ import torch
 from transformers import (AutoTokenizer, AutoModel, AutoModelForQuestionAnswering, pipeline,
                           AutoModelForSeq2SeqLM)
 
+from query_ai.config import embedding_config, generator_config
 from query_ai.database import DBMgr
-from query_ai.commons import embedding_token_length, generator_model_name, embedding_model_name
 
 
 class ModelMgr:
     """
-    A class to manage models for embedding and question answering.
-
-    Attributes:
-    embedding_tokenizer (AutoTokenizer): Tokenizer for the embedding model.
-    embedding_model (AutoModel): Embedding model.
-    qa_tokenizer (AutoTokenizer): Tokenizer for the question answering model.
-    qa_model (AutoModelForQuestionAnswering): Question answering model.
-    qa_pipeline (pipeline): Pipeline for question answering.
+    A class to manage models.
 
     Author: Ron Webb
     Since: 1.0.0
@@ -30,11 +23,11 @@ class ModelMgr:
         embedding_model_name (str): The name of the embedding model.
         qa_model_name (str): The name of the question answering model.
         """
-        self.embedding_tokenizer = AutoTokenizer.from_pretrained(embedding_model_name)
-        self.embedding_model = AutoModel.from_pretrained(embedding_model_name)
+        self.embedding_tokenizer = AutoTokenizer.from_pretrained(embedding_config.model_name)
+        self.embedding_model = AutoModel.from_pretrained(embedding_config.model_name)
 
-        self.generator_tokenizer = AutoTokenizer.from_pretrained(generator_model_name)
-        self.generator_model = AutoModelForSeq2SeqLM.from_pretrained(generator_model_name)
+        self.generator_tokenizer = AutoTokenizer.from_pretrained(generator_config.model_name)
+        self.generator_model = AutoModelForSeq2SeqLM.from_pretrained(generator_config.model_name)
         self.generator_pipeline = pipeline("text2text-generation",
                                            model=self.generator_model,
                                            tokenizer=self.generator_tokenizer)
@@ -50,13 +43,14 @@ class ModelMgr:
         numpy.ndarray: The embedding of the text.
         """
 
-        inputs = self.embedding_tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=embedding_token_length)
+        inputs = self.embedding_tokenizer(text, return_tensors="pt", padding=True, truncation=True,
+                                          max_length=embedding_config.token_length)
         with torch.no_grad():
             outputs = self.embedding_model(**inputs)
 
         return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
 
-    def get_embeddings(self, text: str, chunk_size=embedding_token_length, overlap=50):
+    def get_embeddings(self, text: str, chunk_size=embedding_config.token_length, overlap=50):
         """
         Splits the text into overlapping chunks and gets the embedding for each chunk.
 
