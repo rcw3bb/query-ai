@@ -16,7 +16,7 @@ class TestProperties(unittest.TestCase):
 
         self.assertEqual('test', result)
 
-    @patch('query_ai.util.properties.os.path.join')
+    @patch('os.path.join')
     @patch('query_ai.util.properties.configparser.ConfigParser.read')
     def test_get_existing_property(self, mock_read, mock_join):
         mock_join.return_value = '/fake/path/to/conf/test.properties'
@@ -30,7 +30,7 @@ class TestProperties(unittest.TestCase):
 
         self.assertEqual(result, 'value')
 
-    @patch('query_ai.util.properties.os.path.join')
+    @patch('os.path.join')
     @patch('query_ai.util.properties.configparser.ConfigParser.read')
     def test_get_non_existing_property(self, mock_read, mock_join):
         mock_join.return_value = '/fake/path/to/conf/test.properties'
@@ -43,7 +43,7 @@ class TestProperties(unittest.TestCase):
 
         self.assertEqual(result, 'default')
 
-    @patch('query_ai.util.properties.os.path.join')
+    @patch('os.path.join')
     @patch('query_ai.util.properties.configparser.ConfigParser.read')
     def test_getint_existing_property(self, mock_read, mock_join):
         mock_join.return_value = '/fake/path/to/conf/test.properties'
@@ -57,7 +57,7 @@ class TestProperties(unittest.TestCase):
 
         self.assertEqual(result, 42)
 
-    @patch('query_ai.util.properties.os.path.join')
+    @patch('os.path.join')
     @patch('query_ai.util.properties.configparser.ConfigParser.read')
     def test_getint_non_existing_property(self, mock_read, mock_join):
         mock_join.return_value = '/fake/path/to/conf/test.properties'

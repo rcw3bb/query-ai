@@ -1,5 +1,4 @@
 import configparser
-import os
 
 class Properties:
     """
@@ -35,7 +34,7 @@ class Properties:
                 config = configparser.ConfigParser()
                 config.read(self.filename)
                 self.properties = config
-            except FileNotFoundError as e:
+            except FileNotFoundError:
                 print(f"Error: Properties file {self.filename} not found")
 
         return self.properties
