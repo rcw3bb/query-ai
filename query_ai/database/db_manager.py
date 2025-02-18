@@ -2,6 +2,7 @@ import psycopg2
 from pgvector.psycopg2 import register_vector
 
 from query_ai.config import embedding_config
+from query_ai.logger import get_logger
 
 
 class DBMgr:
@@ -28,6 +29,7 @@ class DBMgr:
         self.password = password
         self.host = host
         self.port = port
+        self.log = get_logger(__name__)
 
     def connect(self):
         """
@@ -49,7 +51,7 @@ class DBMgr:
             connection.autocommit = True
             return connection
         except psycopg2.Error as e:
-            print("Error connecting to PostgreSQL database:", e)
+            self.log.error(f"Error connecting to PostgreSQL database: {e}")
             return None
 
     def execute(self, stmt: str, output_logic = lambda connection, cursor: None, stmt_vars : tuple = None):

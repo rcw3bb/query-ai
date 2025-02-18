@@ -4,6 +4,9 @@ from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
+from query_ai.logger import get_logger
+
+
 class TextUtil:
     """
     A utility class for text processing tasks such as splitting text into paragraphs,
@@ -19,9 +22,9 @@ class TextUtil:
         """
         self.stop_words = set(stopwords.words('english'))
         self.lemmatizer = WordNetLemmatizer()
+        self.log = get_logger(__name__)
 
-    @staticmethod
-    def split_by_paragraph(text):
+    def split_by_paragraph(self, text):
         """
         Splits a large text into paragraphs.
 
@@ -44,9 +47,11 @@ class TextUtil:
 
         paragraphs = [p.strip() for p in paragraphs if p.strip()] #Removes empty paragraphs
 
+        self.log.debug(f"Split text into the following:\n{paragraphs}")
+
         return paragraphs
 
-    def __remove_emojis(text):
+    def __remove_emojis(self, text):
         """
         Removes emojis from the input text.
 
@@ -62,7 +67,12 @@ class TextUtil:
                                    u"\U0001F680-\U0001F6FF"  # transport & map symbols
                                    u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
                                    "]", flags=re.UNICODE)
-        return emoji_pattern.sub(r'', text) # no emoji
+
+        cleaned_text = emoji_pattern.sub(r'', text) # no emoji
+
+        self.log.debug(f"Removed emojis from text:\n{cleaned_text}")
+
+        return cleaned_text
 
     def clean_text(self, text):
         """
@@ -78,9 +88,12 @@ class TextUtil:
         # text = text.translate(str.maketrans('', '', string.punctuation))  # Remove punctuation
         # text = re.sub(r'\d+', '', text)  # Remove numbers
         text = re.sub(r'<.*?>', '', text) # Remove HTML tags
-        text = TextUtil.__remove_emojis(text) # Remove emojis
+        text = self.__remove_emojis(text) # Remove emojis
         # words = word_tokenize(text)
         # words = [word for word in words if word not in self.stop_words] # Remove Stop words
         # words = [self.lemmatizer.lemmatize(word) for word in words] # Lemmatization
         # cleaned_text = " ".join(words)
+
+        self.log.debug(f"Cleaned text:\n{text}")
+
         return text

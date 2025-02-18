@@ -6,6 +6,7 @@ from transformers import (AutoTokenizer, AutoModel, AutoModelForQuestionAnswerin
 from query_ai.config import embedding_config, generator_config
 from query_ai.database import DBMgr
 
+from query_ai.logger import get_logger
 
 class ModelMgr:
     """
@@ -23,9 +24,9 @@ class ModelMgr:
         embedding_model_name (str): The name of the embedding model.
         qa_model_name (str): The name of the question answering model.
         """
+        self.log = get_logger(__name__)
         self.embedding_tokenizer = AutoTokenizer.from_pretrained(embedding_config.model_name)
         self.embedding_model = AutoModel.from_pretrained(embedding_config.model_name)
-
         self.generator_tokenizer = AutoTokenizer.from_pretrained(generator_config.model_name)
         self.generator_model = AutoModelForSeq2SeqLM.from_pretrained(generator_config.model_name)
         self.generator_pipeline = pipeline("text2text-generation",
@@ -76,8 +77,7 @@ class ModelMgr:
 
         return output
 
-    @staticmethod
-    def format_conversation(conversation):
+    def format_conversation(self, conversation):
         """
         Formats a conversation into a string suitable for prompting the model.
 
@@ -92,6 +92,9 @@ class ModelMgr:
         for message in conversation:
             formatted_conversation += f"{message['role']}: {message['content']}\n"
         formatted_conversation += "assistant:"  # Important for prompting the model
+
+        self.log.debug(f"Formatted conversation:\n{formatted_conversation}")
+
         return formatted_conversation
 
     def generate_answer(self, question: str, db_manager: DBMgr = None, provided_context: str = None):
@@ -135,11 +138,13 @@ Context:
                 {'role': 'user', 'content' : question},
             ]
 
-            formatted_chat = ModelMgr.format_conversation(chat)
+            formatted_chat = self.format_conversation(chat)
 
             result = self.generator_pipeline(formatted_chat,
                                              max_length=len(formatted_chat) + 50,
                                              )[0]
+
+            self.log.debug(f"Generated text: {result['generated_text']}")
 
             result["question"] = question
             result["context"] = context[0]

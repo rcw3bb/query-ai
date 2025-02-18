@@ -1,5 +1,8 @@
 import configparser
 
+from query_ai.logger import get_logger
+
+
 class Properties:
     """
     A class to handle reading properties from a configuration file.
@@ -19,6 +22,7 @@ class Properties:
         """
         self.filename = filename
         self.properties = None
+        self.log = get_logger(__name__)
 
     def __get_properties(self):
         """
@@ -35,7 +39,7 @@ class Properties:
                 config.read(self.filename)
                 self.properties = config
             except FileNotFoundError:
-                print(f"Error: Properties file {self.filename} not found")
+                self.log.error(f"Error: Properties file {self.filename} not found")
 
         return self.properties
 

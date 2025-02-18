@@ -2,7 +2,7 @@ from flask import Flask, request, make_response
 
 from query_ai.database import is_existing_context, db_manager
 from query_ai.model import model_manager
-from query_ai.util.text_util import TextUtil
+from query_ai.util import text_util
 
 class Context:
     """
@@ -42,10 +42,9 @@ class Context:
 
         response_code = 200
 
-        paragraphs = TextUtil.split_by_paragraph(context)
+        paragraphs = text_util.split_by_paragraph(context)
 
         for paragraph in paragraphs:
-            text_util = TextUtil()
             cleaned_text = text_util.clean_text(paragraph)
 
             embeddings = model_manager.get_embeddings(cleaned_text)
