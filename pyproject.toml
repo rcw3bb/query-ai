@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.13"
-transformers = "^4.48.3"
+transformers = "^4.49.0"
 torch = "^2.6.0"
 pgvector = "^0.3.6"
 psycopg2 = "^2.9.10"
