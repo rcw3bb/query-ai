@@ -7,6 +7,8 @@ from query_ai.config import embedding_config, generator_config
 from query_ai.database import DBMgr
 
 from query_ai.logger import get_logger
+from query_ai.model import model_manager
+
 
 class ModelMgr:
     """
@@ -43,6 +45,8 @@ class ModelMgr:
         Returns:
         numpy.ndarray: The embedding of the text.
         """
+
+        self.log.debug(f"Getting embedding for text:\n{text}")
 
         inputs = self.embedding_tokenizer(text, return_tensors="pt", padding=True, truncation=True,
                                           max_length=embedding_config.token_length)
@@ -141,7 +145,8 @@ Context:
             formatted_chat = self.format_conversation(chat)
 
             result = self.generator_pipeline(formatted_chat,
-                                             max_length=len(formatted_chat) + 50,
+                                             #truncation=True,
+                                             max_length=generator_config.token_length,
                                              )[0]
 
             self.log.debug(f"Generated text: {result['generated_text']}")

@@ -47,7 +47,7 @@ class TextUtil:
 
         paragraphs = [p.strip() for p in paragraphs if p.strip()] #Removes empty paragraphs
 
-        self.log.debug(f"Split text into the following:\n{paragraphs}")
+        self.log.debug(f"Split text by paragraph:\n{paragraphs}")
 
         return paragraphs
 

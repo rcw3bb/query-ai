@@ -4,3 +4,4 @@ class EmbeddingConfig:
 
 class GeneratorConfig:
     model_name = "google/flan-t5-large"
+    token_length = 512
