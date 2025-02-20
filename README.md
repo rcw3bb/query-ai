@@ -19,6 +19,16 @@ poetry run python -m query_ai.application
 poetry build
 ```
 
+Create a `.env` file with the following content:
+
+```sh
+QA_DB_NAME=query-ai
+QA_DB_HOST=localhost
+QA_DB_PORT=5432
+QA_DB_USERNAME=postgres
+QA_DB_PASSWORD=mypassword
+```
+
 ## Project Structure
 - `pyproject.toml`: Configuration file for Poetry.
 - `query_ai/model/ModelMgr.py`: Contains the `ModelMgr` class for managing models.
