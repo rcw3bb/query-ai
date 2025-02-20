@@ -81,7 +81,7 @@ class ModelMgr:
 
         return output
 
-    def format_conversation(self, conversation):
+    def format_conversation(self, conversation, suffix):
         """
         Formats a conversation into a string suitable for prompting the model.
 
@@ -95,11 +95,21 @@ class ModelMgr:
         formatted_conversation = ""
         for message in conversation:
             formatted_conversation += f"{message['role']}: {message['content']}\n"
-        formatted_conversation += "assistant:"  # Important for prompting the model
+        formatted_conversation += suffix  # Important for prompting the model
 
         self.log.debug(f"Formatted conversation:\n{formatted_conversation}")
 
         return formatted_conversation
+
+    def __generate(self, chat, suffix):
+        formatted_chat = self.format_conversation(chat, suffix)
+
+        result = self.generator_pipeline(formatted_chat,
+                                         #truncation=True,
+                                         max_length=generator_config.token_length,
+                                         )[0]
+
+        return result
 
     def generate_answer(self, question: str, db_manager: DBMgr = None, provided_context: str = None):
         """
@@ -130,10 +140,11 @@ class ModelMgr:
 
         for context in relevant_contexts:
 
+            retrieved_context = context[0]
             message = f"""You are a chatbot that can answer questions based on the given context.
 Context: 
 
-{context[0]}
+{retrieved_context}
 """
             chat = [
                 {'role': 'system', 'content' : message},
@@ -142,17 +153,54 @@ Context:
                 {'role': 'user', 'content' : question},
             ]
 
-            formatted_chat = self.format_conversation(chat)
+            result = self.__generate(chat, "assistant:")
+            response = result['generated_text']
 
-            result = self.generator_pipeline(formatted_chat,
-                                             #truncation=True,
-                                             max_length=generator_config.token_length,
-                                             )[0]
+            self.log.debug(f"Original response:\n{response}")
 
-            self.log.debug(f"Generated text: {result['generated_text']}")
+            is_valid_response = self.validate_answer(retrieved_context, response)
+
+            if not is_valid_response:
+                result['generated_text'] = "I don't know"
 
             result["question"] = question
-            result["context"] = context[0]
+            result["context"] = retrieved_context
+
+            self.log.debug(f"Final response:\n{result['generated_text']}")
+
             results.append(result)
 
         return results
+
+    def validate_answer(self, context, response):
+        """
+        Validates the response based on the given context.
+
+        Args:
+        context (str): The context in which the response should be validated.
+        response (str): The response to validate.
+
+        Returns:
+        int: 1 if the response is valid within the context, 0 otherwise.
+        """
+
+        message = f"""You are a quality analyst that validates the response if it in with context.
+            
+Context: 
+
+{context}
+
+Response:
+
+{response}
+        """
+        chat = [
+            {'role': 'system', 'content' : message},
+            {'role': 'analyst', 'content' : "Must answer 1 if correct, 0 if incorrect."},
+        ]
+        result = self.__generate(chat, "analyst:")
+        is_valid_response = result['generated_text'].strip()
+
+        self.log.debug(f"Validation result: {is_valid_response}")
+
+        return int(is_valid_response)
