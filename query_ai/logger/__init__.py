@@ -2,11 +2,12 @@ import os
 import logging
 import logging.config
 
-__logs_directory = "../logs"
-__conf_directory = "../conf"
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
-if not os.path.exists(__logs_directory):
-    os.makedirs(__logs_directory)
+__conf_directory = f"{script_dir}/../../conf"
+
+if not os.path.exists(__conf_directory):
+    raise Exception("Config directory not found.")
 
 __logger_ini_file = os.path.join(__conf_directory, 'logging.ini')
 
