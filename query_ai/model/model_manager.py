@@ -1,3 +1,10 @@
+"""
+A module to manage models.
+
+Author: Ron Webb
+Since: 1.0.0
+"""
+
 import torch
 
 from transformers import (AutoTokenizer, AutoModel, pipeline, AutoModelForSeq2SeqLM)
@@ -44,7 +51,7 @@ class ModelMgr:
         numpy.ndarray: The embedding of the text.
         """
 
-        self.log.debug(f"Getting embedding for text:\n{text}")
+        self.log.debug("Getting embedding for text:\n%s", text)
 
         inputs = self.embedding_tokenizer(text, return_tensors="pt", padding=True, truncation=True,
                                           max_length=embedding_config.token_length)
@@ -64,7 +71,8 @@ class ModelMgr:
         overlap (int, optional): The number of words to overlap between chunks. Defaults to 50.
 
         Returns:
-        list: A list of tuples containing the chunk index, start index, end index, chunk text, and its embedding.
+        list: A list of tuples containing the chunk index, start index, end index, chunk text,
+            and its embedding.
         """
 
         words = text.split()
@@ -85,7 +93,8 @@ class ModelMgr:
         Formats a conversation into a string suitable for prompting the model.
 
         Args:
-        conversation (list): A list of dictionaries representing the conversation. Each dictionary should have 'role' and 'content' keys.
+        conversation (list): A list of dictionaries representing the conversation. Each dictionary
+            should have 'role' and 'content' keys.
 
         Returns:
         str: The formatted conversation as a string.
@@ -96,7 +105,7 @@ class ModelMgr:
             formatted_conversation += f"{message['role']}: {message['content']}\n"
         formatted_conversation += suffix  # Important for prompting the model
 
-        self.log.debug(f"Formatted conversation:\n{formatted_conversation}")
+        self.log.debug("Formatted conversation:\n%s", formatted_conversation)
 
         return formatted_conversation
 
@@ -110,7 +119,8 @@ class ModelMgr:
 
         return result
 
-    def generate_answer(self, question: str, db_manager: DBMgr = None, provided_context: str = None):
+    def generate_answer(self, question: str, db_manager: DBMgr = None,
+                        provided_context: str = None):
         """
         Answer a question using the generator model and database manager.
 
@@ -132,7 +142,8 @@ class ModelMgr:
             relevant_contexts = [(provided_context, distance)]
         elif db_manager:
             relevant_contexts = db_manager.execute(
-                stmt="SELECT context, embedding <=> %s AS distance FROM qa_embeddings ORDER BY distance LIMIT 1",
+                stmt="SELECT context, embedding <=> %s AS distance FROM qa_embeddings "
+                     "ORDER BY distance LIMIT 1",
                 stmt_vars=(question_embedding,),
                 output_logic=lambda ___connection, ___cursor: ___cursor.fetchall()
             )
@@ -155,7 +166,7 @@ Context:
             result = self.__generate(chat, "assistant:")
             response = result['generated_text']
 
-            self.log.debug(f"Original response:\n{response}")
+            self.log.debug("Original response:\n%s", response)
 
             is_valid_response = self.validate_answer(retrieved_context, response)
 
@@ -165,7 +176,7 @@ Context:
             result["question"] = question
             result["context"] = retrieved_context
 
-            self.log.debug(f"Final response:\n{result['generated_text']}")
+            self.log.debug("Final response:\n%s", result['generated_text'])
 
             results.append(result)
 
@@ -200,6 +211,6 @@ Response:
         result = self.__generate(chat, "analyst:")
         is_valid_response = result['generated_text'].strip()
 
-        self.log.debug(f"Validation result: {is_valid_response}")
+        self.log.debug("Validation result: %s", is_valid_response)
 
         return int(is_valid_response)

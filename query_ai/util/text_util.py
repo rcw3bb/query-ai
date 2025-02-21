@@ -1,6 +1,13 @@
+"""
+A utility class for text processing tasks such as splitting text into paragraphs,
+
+Author: Ron Webb
+Since: 1.0.0
+"""
+
 import re
 
-from nltk import word_tokenize
+from nltk import word_tokenize #pylint: disable=unused-import
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
@@ -47,7 +54,7 @@ class TextUtil:
 
         paragraphs = [p.strip() for p in paragraphs if p.strip()] #Removes empty paragraphs
 
-        self.log.debug(f"Split text by paragraph:\n{paragraphs}")
+        self.log.debug("Split text by paragraph:\n%s", paragraphs)
 
         return paragraphs
 
@@ -70,7 +77,7 @@ class TextUtil:
 
         cleaned_text = emoji_pattern.sub(r'', text) # no emoji
 
-        self.log.debug(f"Removed emojis from text:\n{cleaned_text}")
+        self.log.debug("Removed emojis from text:\n%s", cleaned_text)
 
         return cleaned_text
 
@@ -94,6 +101,6 @@ class TextUtil:
         # words = [self.lemmatizer.lemmatize(word) for word in words] # Lemmatization
         # cleaned_text = " ".join(words)
 
-        self.log.debug(f"Cleaned text:\n{text}")
+        self.log.debug("Cleaned text:\n%s", text)
 
         return text

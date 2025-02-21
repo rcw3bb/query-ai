@@ -1,3 +1,11 @@
+"""
+This module is the database package. It contains the database manager and the
+database configuration.
+
+Author: Ron Webb
+Since: 1.0.0
+"""
+
 from .db_manager import DBMgr, is_existing_context
 from ..config.db_config import DBConfig
 

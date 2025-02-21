@@ -1,3 +1,10 @@
+"""
+A module to manage database connections and operations for a PostgreSQL database.
+
+Author: Ron Webb
+Since: 1.0.0
+"""
+
 import psycopg2
 from pgvector.psycopg2 import register_vector
 
@@ -13,6 +20,7 @@ class DBMgr:
     Since: 1.0.0
     """
 
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, dbname: str, user: str, password: str, host: str, port: int):
         """
         Constructs all the necessary attributes for the DBMgr object.
@@ -30,13 +38,15 @@ class DBMgr:
         self.host = host
         self.port = port
         self.log = get_logger(__name__)
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
 
     def connect(self):
         """
-        Establishes a connection to the PostgreSQL database.
+        Establishes a connection to the PostgresSQL database.
 
         Returns:
-            connection (psycopg2.extensions.connection): The database connection object if successful, None otherwise.
+            connection (psycopg2.extensions.connection): The database connection object if
+            successful, None otherwise.
         """
         try:
             connection = psycopg2.connect(
@@ -47,14 +57,14 @@ class DBMgr:
                 port=self.port
             )
 
-            # Enable autocommit
             connection.autocommit = True
             return connection
         except psycopg2.Error as e:
-            self.log.error(f"Error connecting to PostgreSQL database: {e}")
+            self.log.error("Error connecting to PostgreSQL database: %s", e)
             return None
 
-    def execute(self, stmt: str, output_logic = lambda connection, cursor: None, stmt_vars : tuple = None):
+    def execute(self, stmt: str, output_logic = lambda connection, cursor: None,
+                stmt_vars : tuple = None):
         """
         Executes a given SQL statement.
 
@@ -95,7 +105,8 @@ class DBMgr:
             """, stmt_vars=(embedding_config.token_length,))
 
         # Create index for embedding column
-        self.execute("CREATE INDEX IF NOT EXISTS embedding_idx ON qa_embeddings USING ivfflat(embedding)")
+        self.execute("CREATE INDEX IF NOT EXISTS embedding_idx ON qa_embeddings "
+                     "USING ivfflat(embedding)")
 
 def is_existing_context(db_manager : DBMgr, context: str):
     """

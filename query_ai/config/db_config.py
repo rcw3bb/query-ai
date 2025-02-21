@@ -1,3 +1,11 @@
+"""
+This module contains the DBConfig class which is used to load database configuration
+settings from the properties file and environment variables.
+
+Author: Ron Webb
+Since: 1.0.0
+"""
+
 import os
 
 class DBConfig:
@@ -16,7 +24,7 @@ class DBConfig:
 
         self.__database = os.getenv("QA_DB_NAME", "query-ai")
         self.__host = os.getenv("QA_DB_HOST", "localhost")
-        self.__port = os.getenv("QA_DB_PORT", 5432)
+        self.__port = os.getenv("QA_DB_PORT", "5432")
         self.__user = os.getenv("QA_DB_USERNAME", "postgres")
         self.__password = os.getenv("QA_DB_PASSWORD", "mypassword")
 

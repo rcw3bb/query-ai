@@ -1,9 +1,17 @@
+"""
+This module defines the Context class to handle context-related API endpoints.
+
+Author: Ron Webb
+Since: 1.0.0
+"""
+
 from flask import Flask, request, make_response
 
 from query_ai.database import is_existing_context, db_manager
 from query_ai.model import model_manager
 from query_ai.util import text_util
 
+# pylint: disable=R0903
 class Context:
     """
     A class to handle context-related API endpoints.
@@ -68,3 +76,4 @@ class Context:
                 response_code = 201
 
         return make_response('', response_code)
+# pylint: enable=R0903

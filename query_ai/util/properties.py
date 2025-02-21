@@ -1,3 +1,10 @@
+"""
+A module to handle reading properties from a configuration file.
+
+Author: Ron Webb
+Since: 1.0.0
+"""
+
 import configparser
 
 from query_ai.logger import get_logger
@@ -39,7 +46,7 @@ class Properties:
                 config.read(self.filename)
                 self.properties = config
             except FileNotFoundError:
-                self.log.error(f"Error: Properties file {self.filename} not found")
+                self.log.error("Error: Properties file %s not found", self.filename)
 
         return self.properties
 
@@ -80,7 +87,8 @@ class Properties:
         Returns:
         -------
         int
-            The value of the property as an integer, or the default value if the property is not found.
+            The value of the property as an integer, or the default value if the property
+            is not found.
         """
         return self.__get_properties().getint(section, prop) \
             if self.__get_properties().has_option(section, prop) else default_value

@@ -1,8 +1,16 @@
+"""
+This module defines the Query class to handle query-related API endpoints.
+
+Author: Ron Webb
+Since: 1.0.0
+"""
+
 from flask import Flask, request, jsonify
 
 from query_ai.database import db_manager
 from query_ai.model import model_manager
 
+# pylint: disable=R0903
 class Query:
     """
     A class to handle query requests to the Flask application.
@@ -44,3 +52,4 @@ class Query:
         text = response[0]['generated_text']
 
         return jsonify({'answer': text}), 200
+# pylint: enable=R0903
