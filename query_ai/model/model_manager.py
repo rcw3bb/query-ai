@@ -1,13 +1,11 @@
 import torch
 
-from transformers import (AutoTokenizer, AutoModel, AutoModelForQuestionAnswering, pipeline,
-                          AutoModelForSeq2SeqLM)
+from transformers import (AutoTokenizer, AutoModel, pipeline, AutoModelForSeq2SeqLM)
 
 from query_ai.config import embedding_config, generator_config
 from query_ai.database import DBMgr
 
 from query_ai.logger import get_logger
-from query_ai.model import model_manager
 
 
 class ModelMgr:
@@ -55,7 +53,8 @@ class ModelMgr:
 
         return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
 
-    def get_embeddings(self, text: str, chunk_size=embedding_config.token_length, overlap=50):
+    def get_embeddings(self, text: str, chunk_size=embedding_config.db_record_chunk_size,
+                       overlap=embedding_config.db_record_overlap):
         """
         Splits the text into overlapping chunks and gets the embedding for each chunk.
 
