@@ -200,7 +200,8 @@ Context:
         int: 1 if the response is valid within the context, 0 otherwise.
         """
 
-        message = f"""You are an analyst that validates if question can be answered from the given context.            
+        message = f"""You are an analyst that validates if question can be answered from the
+given context.
 
 Context: 
 
