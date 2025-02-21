@@ -49,6 +49,9 @@ class Query:
         else:
             response = model_manager.generate_answer(question, db_manager)
 
+        if not response:
+            return jsonify({'error': 'An error occurred while generating the answer.'}), 500
+
         text = response[0]['generated_text']
 
         return jsonify({'answer': text}), 200

@@ -119,6 +119,21 @@ class ModelMgr:
 
         return result
 
+    def __ask_question(self, context, question):
+        message = f"""You are a chatbot that can answer questions based on the given context.
+Context: 
+
+{context}
+"""
+        chat = [
+            {'role': 'system', 'content' : message},
+            {'role': 'assistant', 'content' : "Must answer politely and informatively."},
+            {'role': 'assistant', 'content' : "Respond 'I don't know' if out of context."},
+            {'role': 'user', 'content' : question},
+        ]
+
+        return self.__generate(chat, "assistant:")
+
     def generate_answer(self, question: str, db_manager: DBMgr = None,
                         provided_context: str = None):
         """
@@ -151,66 +166,57 @@ class ModelMgr:
         for context in relevant_contexts:
 
             retrieved_context = context[0]
-            message = f"""You are a chatbot that can answer questions based on the given context.
-Context: 
 
-{retrieved_context}
-"""
-            chat = [
-                {'role': 'system', 'content' : message},
-                {'role': 'assistant', 'content' : "Must answer politely and informatively."},
-                {'role': 'assistant', 'content' : "Respond 'I don't know' if out of context."},
-                {'role': 'user', 'content' : question},
-            ]
+            result = {}
 
-            result = self.__generate(chat, "assistant:")
+            is_valid_question = self.validate_question(retrieved_context, question)
+
+            if is_valid_question:
+                result = self.__ask_question(retrieved_context, question)
+            else:
+                self.log.debug("The question is out of context.")
+                result['generated_text'] = "I don't know"
+
             response = result['generated_text']
 
-            self.log.debug("Original response:\n%s", response)
-
-            is_valid_response = self.validate_answer(retrieved_context, response)
-
-            if not is_valid_response:
-                result['generated_text'] = "I don't know"
+            self.log.debug("Response:\n%s", response)
 
             result["question"] = question
             result["context"] = retrieved_context
-
-            self.log.debug("Final response:\n%s", result['generated_text'])
 
             results.append(result)
 
         return results
 
-    def validate_answer(self, context, response):
+    def validate_question(self, context, question):
         """
-        Validates the response based on the given context.
+        Validates the question if it is valid for the given context.
 
         Args:
-        context (str): The context in which the response should be validated.
-        response (str): The response to validate.
+        context (str): The context in which the question must be based on.
+        question (str): The question related to the context.
 
         Returns:
         int: 1 if the response is valid within the context, 0 otherwise.
         """
 
-        message = f"""You are a quality analyst that validates the response if it in with context.
-            
+        message = f"""You are an analyst that validates if question can be answered from the given context.            
+
 Context: 
 
 {context}
 
-Response:
+Question:
 
-{response}
+{question}
         """
         chat = [
             {'role': 'system', 'content' : message},
-            {'role': 'analyst', 'content' : "Must answer 1 if correct, 0 if incorrect."},
+            {'role': 'analyst', 'content' : "Must answer 1 if yes, 0 if no."},
         ]
         result = self.__generate(chat, "analyst:")
-        is_valid_response = result['generated_text'].strip()
+        is_valid_question = result['generated_text'].strip()
 
-        self.log.debug("Validation result: %s", is_valid_response)
+        self.log.debug("Validation result: %s", is_valid_question)
 
-        return int(is_valid_response)
+        return int(is_valid_question)
