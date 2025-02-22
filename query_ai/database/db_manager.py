@@ -7,6 +7,7 @@ Since: 1.0.0
 
 import psycopg2
 from pgvector.psycopg2 import register_vector
+from psycopg2 import ProgrammingError
 
 from query_ai.config import embedding_config
 from query_ai.logger import get_logger
@@ -76,13 +77,25 @@ class DBMgr:
         Returns:
             The result of the output_logic function.
         """
-        connection = self.connect()
         try:
-            cursor = connection.cursor()
-            cursor.execute(stmt, stmt_vars)
-            return output_logic(connection, cursor)
-        finally:
-            connection.close()
+            connection = self.connect()
+            try:
+                cursor = connection.cursor()
+
+                try:
+                    cursor.execute(stmt, stmt_vars)
+                except ProgrammingError as prog_error:
+                    if "can't adapt type 'numpy.ndarray'" in str(prog_error):
+                        self.__register_vector()
+                        cursor.execute(stmt, stmt_vars)
+                    else:
+                        raise prog_error
+
+                return output_logic(connection, cursor)
+            finally:
+                connection.close()
+        except Exception as exception:
+            raise DBException("Database error occurred.") from exception
 
     def initialize(self):
         """
@@ -90,8 +103,7 @@ class DBMgr:
         """
 
         # Create the vector extension
-        self.execute("CREATE EXTENSION IF NOT EXISTS vector",
-                     output_logic=lambda ___connection, ___cursor: register_vector(___connection))
+        self.__register_vector()
 
         # Create a table to store embeddings and context
         self.execute("""
@@ -107,6 +119,15 @@ class DBMgr:
         # Create index for embedding column
         self.execute("CREATE INDEX IF NOT EXISTS embedding_idx ON qa_embeddings "
                      "USING ivfflat(embedding)")
+
+    def __register_vector(self):
+        self.execute("CREATE EXTENSION IF NOT EXISTS vector",
+                     output_logic=lambda ___connection, ___cursor: register_vector(___connection))
+
+class DBException(Exception):
+    """
+    An exception class to handle database errors.
+    """
 
 def is_existing_context(db_manager : DBMgr, context: str):
     """

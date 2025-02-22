@@ -6,8 +6,11 @@ Author: Ron Webb
 Since: 1.0.0
 """
 
-from .db_manager import DBMgr, is_existing_context
+from .db_manager import DBMgr, is_existing_context, DBException
 from ..config.db_config import DBConfig
+from ..logger import get_logger
+
+logger = get_logger(__name__)
 
 db_config = DBConfig()
 
@@ -19,6 +22,9 @@ db_manager = DBMgr(
     port=db_config.get_port()
 )
 
-db_manager.initialize()
+try:
+    db_manager.initialize()
+except DBException as e:
+    logger.error("Error initializing database: %s", e)
 
 __all__ = ['db_manager', 'is_existing_context', 'DBMgr']

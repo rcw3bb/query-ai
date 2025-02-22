@@ -11,6 +11,7 @@ from transformers import (AutoTokenizer, AutoModel, pipeline, AutoModelForSeq2Se
 
 from query_ai.config import embedding_config, generator_config
 from query_ai.database import DBMgr
+from query_ai.database.db_manager import DBException
 
 from query_ai.logger import get_logger
 
@@ -156,12 +157,17 @@ Context:
             distance = 0
             relevant_contexts = [(provided_context, distance)]
         elif db_manager:
-            relevant_contexts = db_manager.execute(
-                stmt="SELECT context, embedding <=> %s AS distance FROM qa_embeddings "
-                     "ORDER BY distance LIMIT 1",
-                stmt_vars=(question_embedding,),
-                output_logic=lambda ___connection, ___cursor: ___cursor.fetchall()
-            )
+            try:
+                relevant_contexts = db_manager.execute(
+                    stmt="SELECT context, embedding <=> %s AS distance FROM qa_embeddings "
+                         "ORDER BY distance LIMIT 1",
+                    stmt_vars=(question_embedding,),
+                    output_logic=lambda ___connection, ___cursor: ___cursor.fetchall()
+                )
+            except DBException:
+                results.append({"generated_text": "Sorry, I cannot access my database. "
+                                                  "Try again later.",
+                                "question": question, "context": ""})
 
         for context in relevant_contexts:
 
@@ -185,6 +191,11 @@ Context:
             result["context"] = retrieved_context
 
             results.append(result)
+
+        if not results:
+            self.log.debug("The database is empty.")
+            results.append({"generated_text": "The context database is empty.",
+                            "question": question, "context": ""})
 
         return results
 
