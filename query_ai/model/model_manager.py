@@ -110,7 +110,7 @@ class ModelMgr:
 
         return formatted_conversation
 
-    def __generate(self, chat, suffix):
+    def __pipeline(self, chat, suffix):
         formatted_chat = self.format_conversation(chat, suffix)
 
         result = self.generator_pipeline(formatted_chat,
@@ -133,7 +133,38 @@ Context:
             {'role': 'user', 'content' : question},
         ]
 
-        return self.__generate(chat, "assistant:")
+        return self.__pipeline(chat, "assistant:")
+
+    def __retrieve_context(self, db_manager, question):
+        question_embedding = self.get_embedding(question)
+
+        return db_manager.execute(
+            stmt="SELECT context, embedding <=> %s AS distance FROM qa_embeddings "
+                 "ORDER BY distance LIMIT 1",
+            stmt_vars=(question_embedding,),
+            output_logic=lambda ___connection, ___cursor: ___cursor.fetchall()
+        )
+
+    def __generate_result(self, context, question):
+
+        context_first_field = 0
+        retrieved_context = context[context_first_field]
+        is_valid_question = self.validate_question(retrieved_context, question)
+        result = {}
+
+        if is_valid_question:
+            result = self.__ask_question(retrieved_context, question)
+        else:
+            result['generated_text'] = "I don't know"
+
+        response = result['generated_text']
+
+        self.log.debug("Response:\n%s", response)
+
+        result["question"] = question
+        result["context"] = retrieved_context
+
+        return result
 
     def generate_answer(self, question: str, db_manager: DBMgr = None,
                         provided_context: str = None):
@@ -148,8 +179,6 @@ Context:
         list: A list of dictionaries containing the answers and their contexts.
         """
 
-        question_embedding = self.get_embedding(question)
-
         results = []
         relevant_contexts = []
 
@@ -158,38 +187,14 @@ Context:
             relevant_contexts = [(provided_context, distance)]
         elif db_manager:
             try:
-                relevant_contexts = db_manager.execute(
-                    stmt="SELECT context, embedding <=> %s AS distance FROM qa_embeddings "
-                         "ORDER BY distance LIMIT 1",
-                    stmt_vars=(question_embedding,),
-                    output_logic=lambda ___connection, ___cursor: ___cursor.fetchall()
-                )
+                relevant_contexts = self.__retrieve_context(db_manager, question)
             except DBException:
                 results.append({"generated_text": "Sorry, I cannot access my database. "
                                                   "Try again later.",
                                 "question": question, "context": ""})
 
         for context in relevant_contexts:
-
-            retrieved_context = context[0]
-
-            result = {}
-
-            is_valid_question = self.validate_question(retrieved_context, question)
-
-            if is_valid_question:
-                result = self.__ask_question(retrieved_context, question)
-            else:
-                self.log.debug("The question is out of context.")
-                result['generated_text'] = "I don't know"
-
-            response = result['generated_text']
-
-            self.log.debug("Response:\n%s", response)
-
-            result["question"] = question
-            result["context"] = retrieved_context
-
+            result = self.__generate_result(context, question)
             results.append(result)
 
         if not results:
@@ -226,9 +231,14 @@ Question:
             {'role': 'system', 'content' : message},
             {'role': 'analyst', 'content' : "Must answer 1 if yes, 0 if no."},
         ]
-        result = self.__generate(chat, "analyst:")
+        result = self.__pipeline(chat, "analyst:")
         is_valid_question = result['generated_text'].strip()
 
         self.log.debug("Validation result: %s", is_valid_question)
 
-        return int(is_valid_question)
+        int_output = int(is_valid_question)
+
+        if not int_output:
+            self.log.debug("The question is out of context.")
+
+        return int_output
