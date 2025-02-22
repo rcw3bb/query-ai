@@ -1,16 +1,16 @@
 # Query AI
 
-## Description
 Query AI is a query application with AI capabilities. It leverages state-of-the-art models for embedding and question answering.
 
 [TOC]
 
-## Prerequisites
+## :white_check_mark: Prerequisites
 
 * **Python 3.13**
 * **Poetry** for packaging and dependency management
 * **Postgres** with **vector** extension
-* **.env** file with the following syntax in the root of the application:
+  :information_source: See the **appendix** about using Docker to bring up the **Postgres** database, if needed.
+* :exclamation: **.env** file with the following syntax in the root of the application:
 
   ```properties
   # The name of the database to connect to
@@ -63,7 +63,7 @@ Expect something like the following:
 
 After this, the application will be listening on port **5000**.
 
-## Usage
+## :book: Usage
 
 ### Saving a context to the database
 
@@ -137,6 +137,24 @@ If the payload has context, the question will be answered based on the provided 
 }
 ```
 
+## :ledger: Logging
+
+The **logging.ini** *(i.e., the configuration)* can be found in the **conf** directory within the **root** of the application. The **default log level** of the **query_ai** package is **INFO** as follows:
+
+```ini
+[logger_query_ai]
+level=INFO
+```
+
+Change the level to `DEBUG` to see more information in the log.
+
+The **name** *(i.e., query_ai.log)* and **location** of the **log file** are indicated in the `handler_fileHandler` configuration as follows:
+
+```ini
+[handler_fileHandler]
+args=('query_ai.log', 'a', 10485760, 50)
+```
+
 ## Appendix
 
 ### Postgres with Vector support in Docker Container
@@ -165,4 +183,4 @@ poetry run pytest
 
 ## Author
 
-Ronaldo Webb
+### Ronaldo Webb
