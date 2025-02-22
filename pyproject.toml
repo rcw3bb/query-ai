@@ -8,14 +8,15 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.13"
 transformers = "^4.49.0"
-torch = "^2.6.0"
 pgvector = "^0.3.6"
 psycopg2 = "^2.9.10"
 nltk = "^3.9.1"
 flask = "^3.1.0"
 python-dotenv = "^1.0.1"
 waitress = "^3.0.2"
-
+torch = {version = "*", source = "pytorch-cu118"}
+torchvision = {version = "*", source = "pytorch-cu118"}
+torchaudio = {version = "*", source = "pytorch-cu118"}
 
 [tool.poetry.group.dev.dependencies]
 cython = "^3.0.11"
@@ -26,6 +27,11 @@ pytest-cov = "^6.0.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+priority = "explicit"
 
 [tool.poetry.scripts]
 lint = "query_ai.util.lint_runner:main"
