@@ -14,9 +14,9 @@ nltk = "^3.9.1"
 flask = "^3.1.0"
 python-dotenv = "^1.0.1"
 waitress = "^3.0.2"
-torch = {version = "*", source = "pytorch-cu118"}
-torchvision = {version = "*", source = "pytorch-cu118"}
-torchaudio = {version = "*", source = "pytorch-cu118"}
+torch = {version = "*", source = "pytorch-cuda"}
+torchvision = {version = "*", source = "pytorch-cuda"}
+torchaudio = {version = "*", source = "pytorch-cuda"}
 
 [tool.poetry.group.dev.dependencies]
 cython = "^3.0.11"
@@ -29,8 +29,8 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [[tool.poetry.source]]
-name = "pytorch-cu118"
-url = "https://download.pytorch.org/whl/cu118"
+name = "pytorch-cuda"
+url = "https://download.pytorch.org/whl/cu126"
 priority = "explicit"
 
 [tool.poetry.scripts]
