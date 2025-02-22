@@ -12,7 +12,6 @@ from psycopg2 import ProgrammingError
 from query_ai.config import embedding_config
 from query_ai.logger import get_logger
 
-
 class DBMgr:
     """
     A class to manage database connections and operations for a PostgreSQL database.
@@ -20,6 +19,8 @@ class DBMgr:
     Author: Ron Webb
     Since: 1.0.0
     """
+
+    is_db_initialized = False
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, dbname: str, user: str, password: str, host: str, port: int):
@@ -59,6 +60,11 @@ class DBMgr:
             )
 
             connection.autocommit = True
+
+            if DBMgr.is_db_initialized is False:
+                DBMgr.is_db_initialized = True
+                self.initialize()
+
             return connection
         except psycopg2.Error as e:
             self.log.error("Error connecting to PostgreSQL database: %s", e)
@@ -86,6 +92,7 @@ class DBMgr:
                     cursor.execute(stmt, stmt_vars)
                 except ProgrammingError as prog_error:
                     if "can't adapt type 'numpy.ndarray'" in str(prog_error):
+                        self.log.debug("Registering vector extension.")
                         self.__register_vector()
                         cursor.execute(stmt, stmt_vars)
                     else:
@@ -102,7 +109,6 @@ class DBMgr:
         Initializes the database by creating necessary extensions and tables.
         """
 
-        # Create the vector extension
         self.__register_vector()
 
         # Create a table to store embeddings and context
@@ -111,7 +117,7 @@ class DBMgr:
                 chunk_id INTEGER NOT NULL,
                 start_word INTEGER NOT NULL,
                 end_word INTEGER NOT NULL,
-                context TEXT, 
+                context TEXT,
                 embedding vector(%s)
             )
             """, stmt_vars=(embedding_config.token_length,))

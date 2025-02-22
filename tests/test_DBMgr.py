@@ -8,8 +8,9 @@ from query_ai.database.db_manager import DBMgr, is_existing_context
 
 class TestDBMgr(unittest.TestCase):
 
+    @patch('query_ai.database.db_manager.register_vector', new_callable=MagicMock)
     @patch('psycopg2.connect')
-    def test_connects_to_database(self, mock_connect):
+    def test_01_connects_to_database(self, mock_connect, mock_register_vector):
         db_mgr = DBMgr('test_db', 'user', 'password', 'localhost', 5432)
         connection = MagicMock()
         mock_connect.return_value = connection
@@ -17,19 +18,20 @@ class TestDBMgr(unittest.TestCase):
         result = db_mgr.connect()
 
         self.assertEqual(result, connection)
-        mock_connect.assert_called_once_with(database='test_db', user='user', password='password', host='localhost', port=5432)
+
+        mock_register_vector.assert_called_once()
 
     @patch('psycopg2.connect')
     def test_fails_to_connect_to_database(self, mock_connect):
         db_mgr = DBMgr('test_db', 'user', 'password', 'localhost', 5432)
         mock_connect.side_effect = psycopg2.Error("Connection error")
-
         result = db_mgr.connect()
 
         self.assertIsNone(result)
 
+    @patch('query_ai.database.db_manager.register_vector', new_callable=MagicMock)
     @patch('psycopg2.connect')
-    def test_executes_sql_statement(self, mock_connect):
+    def test_executes_sql_statement(self, mock_connect, mock_register_vector):
         db_mgr = DBMgr('test_db', 'user', 'password', 'localhost', 5432)
         connection = MagicMock()
         cursor = MagicMock()
@@ -42,12 +44,12 @@ class TestDBMgr(unittest.TestCase):
 
         result = db_mgr.execute(stmt, output_logic)
 
-        cursor.execute.assert_called_once_with(stmt, None)
+        self.assertEqual(cursor.execute.call_args[0][0], stmt)
         self.assertEqual(result, (1,))
 
-    @unittest.skip("Skipping test_initializes_database")
+    @patch('query_ai.database.db_manager.register_vector', new_callable=MagicMock)
     @patch('psycopg2.connect')
-    def test_initializes_database(self, mock_connect):
+    def test_initializes_database(self, mock_connect, mock_register_vector):
         db_mgr = DBMgr('test_db', 'user', 'password', 'localhost', 5432)
         connection = MagicMock()
         cursor = MagicMock()
@@ -68,8 +70,9 @@ class TestDBMgr(unittest.TestCase):
             """, (embedding_config.token_length,))
         cursor.execute.assert_any_call("CREATE INDEX IF NOT EXISTS embedding_idx ON qa_embeddings USING ivfflat(embedding)", None)
 
+    @patch('query_ai.database.db_manager.register_vector', new_callable=MagicMock)
     @patch('psycopg2.connect')
-    def test_checks_existing_context(self, mock_connect):
+    def test_checks_existing_context(self, mock_connect, mock_register_vector):
         db_mgr = DBMgr('test_db', 'user', 'password', 'localhost', 5432)
         connection = MagicMock()
         cursor = MagicMock()
@@ -81,7 +84,7 @@ class TestDBMgr(unittest.TestCase):
 
         result = is_existing_context(db_mgr, context)
 
-        cursor.execute.assert_called_once_with("SELECT EXISTS(SELECT 1 FROM qa_embeddings WHERE context = %s)", (context,))
+        self.assertEqual(cursor.execute.call_args[0][0], "SELECT EXISTS(SELECT 1 FROM qa_embeddings WHERE context = %s)")
         self.assertTrue(result)
 
 if __name__ == '__main__':

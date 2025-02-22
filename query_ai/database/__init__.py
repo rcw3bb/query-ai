@@ -22,9 +22,4 @@ db_manager = DBMgr(
     port=db_config.get_port()
 )
 
-try:
-    db_manager.initialize()
-except DBException as e:
-    logger.error("Error initializing database: %s", e)
-
 __all__ = ['db_manager', 'is_existing_context', 'DBMgr']
