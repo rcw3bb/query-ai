@@ -30,6 +30,18 @@ class Context:
         self.app = app
         self.app.add_url_rule('/api/v1/context', view_func=self.save_context, methods=['PUT'])
 
+    def __persist(self, embedding_record):
+        chunk_id = embedding_record[0]
+        start_word = embedding_record[1]
+        end_word = embedding_record[2]
+        chunk = embedding_record[3]
+        embedding = embedding_record[4]
+
+        db_manager.execute(stmt="""
+                        INSERT INTO qa_embeddings (chunk_id, start_word, end_word, context, embedding)
+                        VALUES (%s, %s, %s, %s, %s)
+                        """, stmt_vars=(chunk_id, start_word, end_word, chunk, embedding))
+
     def save_context(self):
         """
         Handles the PUT request to save context data.
@@ -47,14 +59,14 @@ class Context:
         """
         data = request.get_json()
         context = data.get('context')
-
-        response_code = 200
-
+        created_status = 201
+        success_status = 200
+        bad_request = 400
+        response_code = success_status if context else bad_request
         paragraphs = text_util.split_by_paragraph(context)
 
         for paragraph in paragraphs:
             cleaned_text = text_util.clean_text(paragraph)
-
             embeddings = model_manager.get_embeddings(cleaned_text)
 
             for embedding_record in embeddings:
@@ -63,17 +75,9 @@ class Context:
                 if is_existing_context(db_manager, chunk):
                     continue
 
-                chunk_id = embedding_record[0]
-                start_word = embedding_record[1]
-                end_word = embedding_record[2]
-                embedding = embedding_record[4]
+                self.__persist(embedding_record)
 
-                db_manager.execute(stmt="""
-                    INSERT INTO qa_embeddings (chunk_id, start_word, end_word, context, embedding)
-                    VALUES (%s, %s, %s, %s, %s)
-                    """, stmt_vars=(chunk_id, start_word, end_word, chunk, embedding))
-
-                response_code = 201
+                response_code = created_status
 
         return make_response('', response_code)
 # pylint: enable=R0903

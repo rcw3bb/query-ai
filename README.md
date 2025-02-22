@@ -8,23 +8,23 @@ Query AI is a query application with AI capabilities. It leverages state-of-the-
 
 * **Python 3.13**
 * **Poetry** for packaging and dependency management
-* **Postgres** with **vector** extension
-  :information_source: See the **appendix** about using Docker to bring up the **Postgres** database, if needed.
+* **PostgreSQL** with **vector** extension
+  :information_source: See the **appendix** about using Docker to bring up the **PostgreSQL** database, if needed.
 * :exclamation: **.env** file with the following syntax in the root of the application:
 
   ```properties
   # The name of the database to connect to
   QA_DB_NAME=<DATABASE_NAME>
-
+  
   # The host address of the database
   QA_DB_HOST=<HOSTNAME>
-
+  
   # The port number to connect to the database
   QA_DB_PORT=<DATABASE_PORT>
-
+  
   # The username used to authenticate with the database
   QA_DB_USERNAME=<DATABASE_USERNAME>
-
+  
   # The password used to authenticate with the database
   QA_DB_PASSWORD=<DATABASE_PASSWORD>
   ```
@@ -63,9 +63,12 @@ Expect something like the following:
 
 After this, the application will be listening on port **5000**.
 
+:information_source: Stop the application using `CTRL+C`.
+
 ## :book: Usage
 
 ### Saving a context to the database
+Stores the provided context in the database for later use.
 
 #### Endpoint
 
@@ -88,8 +91,7 @@ After this, the application will be listening on port **5000**.
 ```
 
 ### Asking a question based on the context in the database
-
-If the payload doesn't have context, the context will be retrieved from the database.
+Queries the stored context to find answers to the provided question.
 
 #### Endpoint
 
@@ -112,8 +114,7 @@ If the payload doesn't have context, the context will be retrieved from the data
 ```
 
 ### Asking a question from a provided context
-
-If the payload has context, the question will be answered based on the provided context without using the database.
+Answers questions using the context provided in the request and not coming from the database.
 
 #### Endpoint
 
@@ -157,7 +158,7 @@ args=('query_ai.log', 'a', 10485760, 50)
 
 ## Appendix
 
-### Postgres with Vector support in Docker Container
+### PostgreSQL with Vector support in Docker Container
 
 Run the following command from the **root** of the application:
 
@@ -178,8 +179,10 @@ poetry run lint
 Run the following command from the **root** of the application:
 
 ```sh
-poetry run pytest
+poetry run pytest --cov=query_ai --cov-report=html:coverage_report
 ```
+
+:information_source: The **coverage report** will be in the directory **coverage_report** of the **root** of the application.
 
 ## Author
 

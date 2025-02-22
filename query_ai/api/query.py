@@ -6,6 +6,7 @@ Since: 1.0.0
 """
 
 from flask import Flask, request, jsonify
+from werkzeug.exceptions import UnsupportedMediaType
 
 from query_ai.database import db_manager
 from query_ai.model import model_manager
@@ -40,19 +41,29 @@ class Query:
         Returns:
         Response: A Flask JSON response containing the answer and a status code 200.
         """
-        data = request.get_json()
-        question = data.get('question')
-        context = data.get('context')
 
-        if context:
-            response = model_manager.generate_answer(question, provided_context=context)
-        else:
-            response = model_manager.generate_answer(question, db_manager)
+        try:
+            success_status = 200
+            bad_request = 400
+            server_error = 500
+            data = request.get_json()
+            question = data.get('question')
+            context = data.get('context')
 
-        if not response:
-            return jsonify({'error': 'An error occurred while generating the answer.'}), 500
+            if context:
+                response = model_manager.generate_answer(question, provided_context=context)
+            elif question:
+                response = model_manager.generate_answer(question, db_manager)
+            else:
+                return jsonify(''), bad_request
 
-        text = response[0]['generated_text']
+            if not response:
+                return jsonify({'error': 'Error generating response.'}), server_error
 
-        return jsonify({'answer': text}), 200
+            text = response[0]['generated_text']
+
+            return jsonify({'answer': text}), success_status
+        except UnsupportedMediaType:
+            unsupported_media_type = 415
+            return jsonify({'error': 'Unsupported Media Type'}), unsupported_media_type
 # pylint: enable=R0903
