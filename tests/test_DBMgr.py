@@ -3,8 +3,11 @@ import psycopg2
 
 from unittest.mock import patch, MagicMock
 
+from psycopg2 import ProgrammingError
+
 from query_ai.config import embedding_config
-from query_ai.database.db_manager import DBMgr, is_existing_context
+from query_ai.database.db_manager import DBMgr, is_existing_context, DBException
+
 
 class TestDBMgr(unittest.TestCase):
 
@@ -86,6 +89,54 @@ class TestDBMgr(unittest.TestCase):
 
         self.assertEqual(cursor.execute.call_args[0][0], "SELECT EXISTS(SELECT 1 FROM qa_embeddings WHERE context = %s)")
         self.assertTrue(result)
+
+    @patch('query_ai.database.db_manager.DBMgr.connect')
+    @patch('query_ai.database.db_manager.register_vector', new_callable=MagicMock)
+    def test_execute_handles_programming_error_with_numpy(self, mock_register_vector, mock_connect):
+        db_mgr = DBMgr('test_db', 'user', 'password', 'localhost', 5432)
+
+        call_count = 0
+        def side_effect(*args, **kwargs):
+            nonlocal call_count
+            if call_count == 0:
+                call_count += 1
+                raise ProgrammingError("can't adapt type 'numpy.ndarray'")
+            else:
+                return MagicMock()
+
+        mock_connection = MagicMock()
+        mock_cursor = mock_connection.cursor.return_value
+        mock_connect.return_value = mock_connection
+        mock_cursor.execute.side_effect = side_effect
+
+        db_mgr.execute("SELECT * FROM qa_embeddings", stmt_vars=(1,))
+
+        mock_register_vector.assert_called_once()
+        mock_cursor.execute.assert_called_with("SELECT * FROM qa_embeddings", (1,))
+
+    @patch('query_ai.database.db_manager.DBMgr.connect')
+    @patch('query_ai.database.db_manager.register_vector', new_callable=MagicMock)
+    def test_execute_handles_programming_error(self, mock_register_vector, mock_connect):
+        db_mgr = DBMgr('test_db', 'user', 'password', 'localhost', 5432)
+
+        call_count = 0
+        def side_effect(*args, **kwargs):
+            nonlocal call_count
+            if call_count == 0:
+                call_count += 1
+                raise ProgrammingError("Other error")
+            else:
+                return MagicMock()
+
+        mock_connection = MagicMock()
+        mock_cursor = mock_connection.cursor.return_value
+        mock_connect.return_value = mock_connection
+        mock_cursor.execute.side_effect = side_effect
+
+        with self.assertRaises(DBException):
+            db_mgr.execute("SELECT * FROM qa_embeddings", stmt_vars=(1,))
+
+        mock_register_vector.assert_not_called()
 
 if __name__ == '__main__':
     unittest.main()

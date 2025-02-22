@@ -120,5 +120,32 @@ class TestModelMgr(unittest.TestCase):
         self.assertEqual(result[0]['question'], "What is AI?")
         self.assertEqual(result[0]['context'], provided_context)
 
+    @patch.object(ModelMgr, 'validate_question', return_value=0)
+    def test_generate_result_invalid_question(self, mock_validate_question):
+        context = "context text"
+        question = "What is the context?"
+
+        model_mgr = ModelMgr()
+        result = model_mgr.generate_answer(question, provided_context=context)
+
+        self.assertEqual(result[0]['generated_text'], "I don't know")
+
+    @patch.object(ModelMgr, 'validate_question', return_value=1)
+    def test_generate_result_empty_database(self, mock_validate_question):
+        model_mgr = ModelMgr()
+        result = model_mgr.generate_answer(None, provided_context=None)
+
+        self.assertEqual(result[0]['generated_text'], "The context database is empty.")
+
+    @patch('query_ai.model.model_manager.pipeline')
+    def test_out_of_context_question(self, mock_pipeline):
+
+        mock_pipeline.return_value.side_effect = [[{'generated_text': '0'}]]
+
+        model_mgr = ModelMgr()
+        result = model_mgr.validate_question("Context", "Question")
+
+        self.assertEqual(result, 0)
+
 if __name__ == '__main__':
     unittest.main()

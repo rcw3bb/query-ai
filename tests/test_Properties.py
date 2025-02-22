@@ -70,5 +70,12 @@ class TestProperties(unittest.TestCase):
 
         self.assertEqual(result, 0)
 
+    @patch('query_ai.util.properties.configparser.ConfigParser.read', side_effect=FileNotFoundError)
+    def test_file_not_found_error(self, mock_read):
+        properties = Properties('non_existent_file.properties')
+        with self.assertLogs('query_ai.util.properties', level='ERROR') as log:
+            properties.get('section', 'prop', 'default')
+            self.assertIn('Error: Properties file non_existent_file.properties not found', log.output[0])
+
 if __name__ == '__main__':
     unittest.main()

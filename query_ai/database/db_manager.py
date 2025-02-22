@@ -4,6 +4,7 @@ A module to manage database connections and operations for a PostgreSQL database
 Author: Ron Webb
 Since: 1.0.0
 """
+import threading
 
 import psycopg2
 from pgvector.psycopg2 import register_vector
@@ -20,7 +21,17 @@ class DBMgr:
     Since: 1.0.0
     """
 
-    is_db_initialized = False
+    __is_db_initialized__ = False
+    __lock = threading.Lock()
+
+    @staticmethod
+    def __set_db_initialized(is_db_initialized: bool):
+        with DBMgr.__lock:
+            DBMgr.__is_db_initialized__ = is_db_initialized
+
+    @staticmethod
+    def __is_db_initialized():
+        return DBMgr.__is_db_initialized__
 
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, dbname: str, user: str, password: str, host: str, port: int):
@@ -61,13 +72,14 @@ class DBMgr:
 
             connection.autocommit = True
 
-            if DBMgr.is_db_initialized is False:
-                DBMgr.is_db_initialized = True
+            if DBMgr.__is_db_initialized() is False:
+                DBMgr.__set_db_initialized(True)
                 self.initialize()
 
             return connection
         except psycopg2.Error as e:
             self.log.error("Error connecting to PostgreSQL database: %s", e)
+            DBMgr.__set_db_initialized(False)
             return None
 
     def execute(self, stmt: str, output_logic = lambda connection, cursor: None,
@@ -111,7 +123,6 @@ class DBMgr:
 
         self.__register_vector()
 
-        # Create a table to store embeddings and context
         self.execute("""
             CREATE TABLE IF NOT EXISTS qa_embeddings (id SERIAL PRIMARY KEY,
                 chunk_id INTEGER NOT NULL,
@@ -122,7 +133,6 @@ class DBMgr:
             )
             """, stmt_vars=(embedding_config.token_length,))
 
-        # Create index for embedding column
         self.execute("CREATE INDEX IF NOT EXISTS embedding_idx ON qa_embeddings "
                      "USING ivfflat(embedding)")
 

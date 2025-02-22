@@ -68,8 +68,13 @@ class Properties:
         str
             The value of the property, or the default value if the property is not found.
         """
-        return self.__get_properties().get(section, prop) \
-            if self.__get_properties().has_option(section, prop) else default_value
+        props = self.__get_properties()
+
+        if props is None:
+            return default_value
+
+        return props.get(section, prop) \
+            if props.has_option(section, prop) else default_value
 
     def getint(self, section: str, prop: str, default_value: int):
         """
