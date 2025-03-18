@@ -7,9 +7,14 @@ Query AI is a query application with AI capabilities. It leverages state-of-the-
 ## :white_check_mark: Prerequisites
 
 * **Python 3.13**
-* **Poetry** for packaging and dependency management
+
+* **Poetry** for packaging and dependency management.
+
+  :information_source:See the **appendix** on **installing Poetry** if not yet installed.
+
 * **PostgreSQL** with **vector** extension
   :information_source: See the **appendix** about using Docker to bring up the **PostgreSQL** database, if needed.
+
 * :exclamation: **.env** file with the following syntax in the root of the application:
 
   ```properties
@@ -157,6 +162,14 @@ args=('query_ai.log', 'a', 10485760, 50)
 ```
 
 ## Appendix
+
+### Installing Poetry
+
+Run the following command to install Poetry:
+
+```sh
+python -m pip install poetry
+```
 
 ### PostgreSQL with Vector support in Docker Container
 
