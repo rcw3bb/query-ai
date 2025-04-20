@@ -10,12 +10,12 @@ Query AI is a query application with AI capabilities. It leverages state-of-the-
 
 * **Poetry** for packaging and dependency management.
 
-  :information_source:See the **appendix** on **installing Poetry** if not yet installed.
+  :information_source: See the **appendix** on **installing Poetry** if it is not yet installed.
 
-* **PostgreSQL** with **vector** extension
-  :information_source: See the **appendix** about using Docker to bring up the **PostgreSQL** database, if needed.
+* **PostgreSQL** with the **vector** extension.  
+  :information_source: See the **appendix** about using Docker to set up the **PostgreSQL** database, if needed.
 
-* :exclamation: **.env** file with the following syntax in the root of the application:
+* :exclamation: A **.env** file with the following syntax in the root of the application:
 
   ```properties
   # The name of the database to connect to
@@ -34,7 +34,7 @@ Query AI is a query application with AI capabilities. It leverages state-of-the-
   QA_DB_PASSWORD=<DATABASE_PASSWORD>
   ```
 
-  Example:
+  **Example:**
 
   ```properties
   QA_DB_NAME=query-ai
@@ -60,7 +60,7 @@ Run the application using the following command at the **root** of the applicati
 poetry run app
 ```
 
-Expect something like the following:
+You should see output similar to the following:
 
 ```
 2025-02-22 01:36:01,784 - query_ai.application - INFO - Query AI application
@@ -73,7 +73,7 @@ After this, the application will be listening on port **5000**.
 ## :book: Usage
 
 ### Saving a context to the database
-Stores the provided context in the database for later use.
+Store the provided context in the database for later use.
 
 #### Endpoint
 
@@ -96,7 +96,7 @@ Stores the provided context in the database for later use.
 ```
 
 ### Asking a question based on the context in the database
-Queries the stored context to find answers to the provided question.
+Query the stored context to find answers to the provided question.
 
 #### Endpoint
 
@@ -119,7 +119,7 @@ Queries the stored context to find answers to the provided question.
 ```
 
 ### Asking a question from a provided context
-Answers questions using the context provided in the request and not coming from the database.
+Answer questions using the context provided in the request, without relying on the database.
 
 #### Endpoint
 
@@ -145,16 +145,16 @@ Answers questions using the context provided in the request and not coming from 
 
 ## :ledger: Logging
 
-The **logging.ini** *(i.e., the configuration)* can be found in the **conf** directory within the **root** of the application. The **default log level** of the **query_ai** package is **INFO** as follows:
+The **logging.ini** *(i.e., the configuration)* can be found in the **conf** directory within the **root** of the application. The **default log level** of the **query_ai** package is **INFO**, as shown below:
 
 ```ini
 [logger_query_ai]
 level=INFO
 ```
 
-Change the level to `DEBUG` to see more information in the log.
+Change the level to `DEBUG` to see more detailed information in the logs.
 
-The **name** *(i.e., query_ai.log)* and **location** of the **log file** are indicated in the `handler_fileHandler` configuration as follows:
+The **name** *(i.e., query_ai.log)* and **location** of the **log file** are specified in the `handler_fileHandler` configuration, as shown below:
 
 ```ini
 [handler_fileHandler]
@@ -165,13 +165,24 @@ args=('query_ai.log', 'a', 10485760, 50)
 
 ### Installing Poetry
 
-Run the following command to install Poetry:
+1. Run the following command to install Poetry:
+   ```sh
+   python -m pip install poetry
+   ```
 
-```sh
-python -m pip install poetry
-```
+2. After installation, make `poetry` available to the `CLI` by updating the `PATH` environment variable to include the following if you are using **Windows**:
 
-### PostgreSQL with Vector support in Docker Container
+   ```sh
+   %LOCALAPPDATA%\Programs\Python\Python313\Scripts
+   ```
+
+3. If your **system Python** version is lower than **Python 3.13**, use the following command to install it:
+
+   ```sh
+   poetry python install 3.13
+   ```
+
+### PostgreSQL with Vector Support in a Docker Container
 
 Run the following command from the **root** of the application:
 
@@ -179,7 +190,7 @@ Run the following command from the **root** of the application:
 docker compose up
 ```
 
-### Running a static code analyzer
+### Running a Static Code Analyzer
 
 Run the following command from the **root** of the application:
 
@@ -187,7 +198,7 @@ Run the following command from the **root** of the application:
 poetry run lint
 ```
 
-### Running the unit tests
+### Running the Unit Tests
 
 Run the following command from the **root** of the application:
 
@@ -195,7 +206,11 @@ Run the following command from the **root** of the application:
 poetry run pytest --cov=query_ai --cov-report=html:coverage_report
 ```
 
-:information_source: The **coverage report** will be in the directory **coverage_report** of the **root** of the application.
+:information_source: The **coverage report** will be located in the **coverage_report** directory at the **root** of the application.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## Author
 
